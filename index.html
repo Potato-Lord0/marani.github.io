@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Marani Wine Club | Natural & Preservative-Free Wines in Virginia</title>
+  <meta name="description" content="Marani Wine Club in Great Falls, Virginia preserves and practices natural, preservative-free winemaking through hands-on communal winemaking, tastings, and cultural education." />
+  <meta name="keywords" content="Marani Wine Club Great Falls Virginia, natural wine, preservative-free, orange wine, small-batch" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://js.stripe.com/v3/"></script>
+</head>
+
+<body>
+  <!-- Navigation -->
+  <header class="navbar">
+    <div class="container nav-content">
+      <div class="logo">
+        <img src="images/marani-logo2.png" alt="Great Falls Winery Marani Logo">
+      </div>
+      <button class="nav-toggle" aria-controls="primary-navigation" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="nav-toggle-icon"></span>
+      </button>
+      <nav>
+        <ul class="nav-links" id="primary-navigation" role="navigation">
+          <li><a href="#home">Home</a></li>
+          <li><a href="#about">About</a></li>
+          <li><a href="#activities">Activities</a></li>
+          <li><a href="#membership">Membership</a></li>
+          <li><a href="#gallery">Gallery</a></li>
+          <li><a href="#donate">Donate</a></li>
+          <li><a href="#contact">Contact</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section id="home" class="hero">
+    <div class="hero-overlay">
+      <img src="images/marani-logo2.png" alt="Marani Wine Club Logo" class="hero-logo">
+
+      <h1 class="hero-title">Marani Wine Club</h1>
+
+      <p class="tagline">
+        Ancient Georgian Wine-Making Tradition in Great Falls, Virginia
+      </p>
+
+      <p class="hero-text">
+        Founded in 2021, Marani focuses on natural, preservative-free winemaking—bringing traditional hands-on methods into a modern communal setting.
+      </p>
+
+      <div class="hero-buttons">
+        <a href="#membership" class="btn primary">Join Us</a>
+        <a href="#donate" class="btn secondary">Donate</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- About -->
+  <section id="about" class="section light">
+    <div class="container">
+      <h2>About Marani</h2>
+      <p>
+        The word <strong>“Marani”</strong> means wine cellar in Georgian. In Georgia,
+        maranis are sacred spaces where wine is made, aged, and shared across generations.
+      </p>
+      <p>
+        Our club was founded in 2021 in Great Falls, Virginia with a mission to preserve
+        and practice small-batch, minimal-intervention fermentation—allowing grapes to ferment naturally
+        with their skins, stems, and seeds and avoiding added preservatives.
+      </p>
+      <p>
+        At Marani, members actively participate in every stage of the process and enjoy
+        wine together in a communal, social setting rooted in history and friendship.
+      </p>
+    </div>
+  </section>
+
+  <!-- Activities -->
+  <section id="activities" class="section dark">
+    <div class="container">
+      <h2>Activities & Events</h2>
+      <div class="grid">
+        <div class="card">
+          <h3>Hands-On Wine Making</h3>
+          <p>Harvesting, crushing, fermentation, and aging using natural, minimal-intervention methods (no added preservatives).</p>
+        </div>
+        <div class="card">
+          <h3>Wine Tastings</h3>
+          <p>Regular tastings of club wines and traditional Georgian styles.</p>
+        </div>
+        <div class="card">
+          <h3>Social Gatherings</h3>
+          <p>Shared meals, celebrations, and communal enjoyment of wine.</p>
+        </div>
+        <div class="card">
+          <h3>Educational Workshops</h3>
+          <p>Learning about Georgian wine culture, history, and techniques.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Membership -->
+  <section id="membership" class="section light">
+    <div class="container">
+      <h2>Membership</h2>
+      <p>
+        Membership at Marani is open to those who value tradition, craftsmanship,
+        and community.
+      </p>
+      <ul class="list">
+        <li>Active participation in wine making</li>
+        <li>Access to tastings and club wines</li>
+        <li>Invitations to events and workshops</li>
+        <li>Connection to an ancient living tradition</li>
+      </ul>
+      <p>
+        Membership fees (if applicable) help cover materials, equipment, and events.
+        Please contact us to learn more.
+      </p>
+    </div>
+  </section>
+
+  <!-- Gallery -->
+  <section id="gallery" class="section dark">
+    <div class="container">
+      <h2>Gallery</h2>
+      <div class="gallery-grid">
+        <img src="images/hero-qvevri.jpg" alt="Traditional winemaking vessel buried in earth" />
+        <img src="images/vineyard.jpg" alt="Vineyard and grape harvest" />
+        <img src="images/tasting.jpg" alt="Wine tasting gathering" />
+        <img src="images/qvevri-detail.jpg" alt="Winemaking vessel detail" />
+      </div>
+    </div>
+  </section>
+
+  <!-- Donate -->
+  <section id="donate" class="section light">
+    <div class="container">
+      <h2>Support Marani</h2>
+      <p>
+        Marani is supported by donations that help cover materials, events,
+        and the preservation of this ancient tradition.
+      </p>
+
+      <div class="donation-buttons">
+        <button class="btn primary" onclick="donate(25)">$25</button>
+        <button class="btn primary" onclick="donate(50)">$50</button>
+        <button class="btn primary" onclick="donate(100)">$100</button>
+        <button class="btn secondary" onclick="customDonate()">Custom Amount</button>
+      </div>
+
+      <p class="note">Secure payments processed via Stripe (test mode).</p>
+    </div>
+  </section>
+
+  <!-- Contact -->
+  <section id="contact" class="section dark">
+    <div class="container">
+      <h2>Contact Us</h2>
+      <p>Great Falls, Virginia, USA</p>
+      <p>Email: <a href="mailto:info@maraniwineclub.org">info@maraniwineclub.org</a></p>
+
+      <form class="contact-form">
+        <input type="text" placeholder="Your Name" required />
+        <input type="email" placeholder="Your Email" required />
+        <textarea placeholder="Your Message" required></textarea>
+        <button type="submit" class="btn primary">Send Message</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <p>© 2025 Marani Wine Club | Great Falls, Virginia</p>
+    <p>Preserving natural, preservative-free winemaking traditions</p>
+  </footer>
+
+  <script src="scripts.js"></script>
+</body>
+</html>

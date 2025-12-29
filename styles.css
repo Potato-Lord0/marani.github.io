@@ -1,0 +1,236 @@
+/* =========================
+   Design Tokens & Layout tokens
+========================= */
+:root {
+  --terracotta: #a04a2a;
+  --amber: #d8a441;
+  --deep-red: #5b1f1f;
+  --earth: #2f2a25;
+  --light: #f5f1eb;
+
+  /* Spacing scale */
+  --space-xs: 0.5rem;
+  --space-sm: 1rem;
+  --space-md: 2rem;
+  --space-lg: 3rem;
+  --space-xl: 4.5rem;
+
+  /* Layout */
+  --content-width: 1100px;
+  --nav-height: 72px;
+}
+
+/* =========================
+   Base Reset & Typography
+========================= */
+* { box-sizing: border-box; }
+html, body, #root { height: 100%; }
+body {
+  margin: 0;
+  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+  color: var(--earth);
+  line-height: 1.6;
+  background: var(--light);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.container {
+  width: 90%;
+  max-width: var(--content-width);
+  margin: 0 auto;
+  padding: 0 var(--space-sm);
+}
+
+/* Accessibility helper */
+.sr-only { position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+
+/* =========================
+   Navigation
+========================= */
+.navbar {
+  position: sticky;
+  top: 0;
+  width: 100%;
+  z-index: 1000;
+  background: rgba(47, 42, 37, 0.95);
+  backdrop-filter: blur(6px);
+}
+
+.nav-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: var(--nav-height);
+}
+
+.logo img { height: 64px; border-radius: 6px; }
+
+.nav-toggle {
+  display: none;
+  background: transparent;
+  border: none;
+  color: #fff;
+  padding: var(--space-sm);
+  cursor: pointer;
+}
+.nav-toggle-icon {
+  display: inline-block;
+  width: 22px; height: 2px; background: #fff; position: relative;
+}
+.nav-toggle-icon::before, .nav-toggle-icon::after {
+  content: '';
+  display: block; width: 22px; height: 2px; background: #fff; position: absolute; left: 0;
+}
+.nav-toggle-icon::before { top: -7px; }
+.nav-toggle-icon::after { bottom: -7px; }
+
+.nav-links {
+  display: flex;
+  gap: calc(var(--space-sm) * 1.5);
+  list-style: none;
+  align-items: center;
+}
+.nav-links a { color: #fff; text-decoration: none; font-weight: 600; }
+
+/* Mobile nav open state */
+.nav-links.open { display: block; position: absolute; left: 0; right: 0; top: var(--nav-height); background: rgba(47,42,37,0.98); padding: var(--space-md); }
+.nav-links.open li { padding: var(--space-sm) 0; }
+
+/* =========================
+   Hero Section
+========================= */
+.hero {
+  min-height: 72vh;
+  display: flex;
+  align-items: center;
+  text-align: center;
+  background: url("images/great-falls.jpg") center / cover no-repeat;
+}
+
+.hero-overlay {
+  width: 100%;
+  padding: var(--space-xl) 1.25rem;
+  color: #fff;
+  background: linear-gradient(180deg, rgba(0,0,0,0.55), rgba(0,0,0,0.45));
+}
+
+.hero-logo { display: block; width: min(160px, 36vw); margin: 0 auto var(--space-sm); }
+
+.hero-title { font-family: 'Playfair Display', serif; font-size: 2.8rem; color: var(--amber); margin: 0 0 var(--space-sm); }
+
+.tagline { margin-bottom: var(--space-sm); font-size: 1.15rem; font-style: italic; color: #f2ddb2; }
+
+.hero-text { max-width: 72ch; margin: 0 auto var(--space-md); font-size: 1.05rem; }
+
+.hero-buttons { display: flex; gap: var(--space-sm); justify-content: center; }
+
+/* =========================
+   Sections & Layout
+========================= */
+section { scroll-margin-top: calc(var(--nav-height) + var(--space-sm)); padding: var(--space-lg) 0; }
+
+.light { background: var(--light); }
+.dark { background: var(--earth); color: #fff; }
+
+h2 { margin-bottom: var(--space-md); color: var(--terracotta); font-family: 'Playfair Display', serif; font-size: 1.8rem; }
+
+.grid { display: grid; gap: var(--space-md); grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+
+.card { padding: var(--space-md); border-radius: 8px; background: rgba(255,255,255,0.06); }
+
+.list { margin-left: 1.2rem; }
+
+/* =========================
+   Gallery
+========================= */
+.gallery-grid { display: grid; gap: var(--space-sm); grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
+.gallery-grid img { width: 100%; height: 180px; object-fit: cover; border-radius: 8px; }
+
+/* =========================
+   Buttons
+========================= */
+.btn { padding: 0.8rem 1.6rem; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; text-decoration: none; transition: transform .12s ease, box-shadow .12s ease; }
+.btn:hover { transform: translateY(-2px); }
+
+.primary { background: linear-gradient(180deg, var(--terracotta), var(--deep-red)); color: #fff; box-shadow: 0 6px 18px rgba(80,30,30,0.14); }
+.secondary { background: linear-gradient(180deg, #f0c863, var(--amber)); color: #111; }
+
+/* Links - tasteful defaults and overrides for dark sections */
+a {
+  color: var(--terracotta);
+  text-decoration: none;
+  transition: color .12s ease, opacity .12s ease;
+}
+a:hover { text-decoration: underline; opacity: 0.95; }
+
+/* Links inside dark sections should be lighter/warmer */
+.dark a { color: var(--amber); }
+
+/* Contact email styling - more prominent and elegant */
+.contact a {
+  color: var(--amber);
+  font-weight: 700;
+  text-decoration: none;
+  border-bottom: 2px solid rgba(255,255,255,0.12);
+  padding-bottom: 2px;
+}
+.contact a:hover {
+  opacity: 0.95;
+  border-bottom-color: rgba(255,255,255,0.3);
+}
+
+.note { margin-top: var(--space-sm); font-size: 0.95rem; color: rgba(255,255,255,0.8); }
+
+/* =========================
+   Forms & Footer
+========================= */
+.contact-form { display: flex; flex-direction: column; gap: var(--space-sm); max-width: 520px; }
+.contact-form input,
+.contact-form textarea {
+  padding: 0.9rem;
+  border-radius: 6px;
+  border: 1px solid rgba(0,0,0,0.08);
+  font-family: inherit;
+  font-size: 1rem;
+  line-height: 1.4;
+  color: inherit;
+}
+.contact-form textarea {
+  min-height: 140px;
+  resize: vertical;
+}
+.contact-form input::placeholder,
+.contact-form textarea::placeholder {
+  color: rgba(0,0,0,0.45);
+  opacity: 1;
+}
+.contact-form input:focus,
+.contact-form textarea:focus {
+  outline: none;
+  box-shadow: 0 6px 18px rgba(16, 11, 8, 0.08);
+  border-color: rgba(160,74,42,0.35);
+}
+
+footer { padding: var(--space-md); text-align: center; background: #14110f; color: #ddd; }
+
+/* =========================
+   Responsive Tweaks
+========================= */
+@media (max-width: 900px) {
+  .nav-toggle { display: inline-block; }
+  .nav-links { display: none; }
+}
+
+@media (max-width: 640px) {
+  .hero-title { font-size: 2rem; }
+  .hero-overlay { padding: var(--space-lg) 1rem; }
+  .gallery-grid img { height: 140px; }
+}
+
+@media (max-width: 420px) {
+  .hero-text { font-size: 0.98rem; }
+  .hero-logo { width: 120px; }
+}
+
+/* End */
