@@ -12,7 +12,6 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css" />
-  <script src="https://js.stripe.com/v3/"></script>
 </head>
 
 <body>
@@ -146,13 +145,18 @@
       </p>
 
       <div class="donation-buttons">
-        <button class="btn primary" onclick="donate(25)">$25</button>
-        <button class="btn primary" onclick="donate(50)">$50</button>
-        <button class="btn primary" onclick="donate(100)">$100</button>
+        <button class="btn primary" onclick="selectDonation(25)">$25</button>
+        <button class="btn primary" onclick="selectDonation(50)">$50</button>
+        <button class="btn primary" onclick="selectDonation(100)">$100</button>
         <button class="btn secondary" onclick="customDonate()">Custom Amount</button>
       </div>
 
-      <p class="note">Secure payments processed via Stripe (test mode).</p>
+      <div id="paypal-button-area" style="margin-top:1rem;">
+        <!-- PayPal buttons will render here when an amount is selected -->
+        <div id="paypal-button-container"></div>
+      </div>
+
+      <p class="note">Secure payments processed via PayPal (sandbox in development).</p>
     </div>
   </section>
 

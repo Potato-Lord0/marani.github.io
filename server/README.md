@@ -20,8 +20,22 @@ npm install
 npm start
 ```
 
-3. Open `http://localhost:4242` to view the site. Donation buttons will call the local server to create a Checkout session.
+3. Open `http://localhost:4242` to view the site. Donation buttons will call the local server to create a Checkout session (Stripe) or PayPal orders when configured.
 
+PayPal support
+- To enable PayPal sandbox testing, set these in your `.env`:
+
+```
+PAYPAL_CLIENT_ID=YOUR_SANDBOX_CLIENT_ID
+PAYPAL_SECRET=YOUR_SANDBOX_SECRET
+PAYPAL_MODE=sandbox
+```
+
+- Endpoints:
+  - `POST /create-paypal-order` { amount: "25" } -> { orderID }
+  - `POST /capture-paypal-order` { orderID: "..." } -> PayPal capture response
+
+If PayPal credentials are not set, the PayPal endpoints will return `501` and a message indicating PayPal is not configured.
 Notes
 - Do NOT commit real secret keys. Use test keys only while developing.
 - This is a minimal example for local testing only; do not use as-is in production.

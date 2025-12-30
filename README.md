@@ -10,4 +10,4 @@ npm install
 npm start
 ```
 
-Open http://localhost:4242 and visit **Member Area** to register and access member features. For moderation testing, set `ADMIN_SECRET` in `server/.env` and call POST `/api/assign-admin` with `{ "email": "user@example.com", "secret": "..." }` to promote a user to admin.
+Open http://localhost:4242 and visit **Member Area** to register and access member features. Donation buttons have been updated to use PayPal (sandbox) when `PAYPAL_CLIENT_ID` and `PAYPAL_SECRET` are set in `server/.env`. For moderation testing, set `ADMIN_SECRET` in `server/.env` and call POST `/api/assign-admin` with `{ "email": "user@example.com", "secret": "..." }` to promote a user to admin.

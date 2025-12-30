@@ -1,61 +1,96 @@
 // Client-side donation helpers.
-// This script expects a backend server to serve the site and provide two endpoints:
-//  - GET /config -> { publicKey }
-//  - POST /create-checkout-session { amount } -> { id: sessionId }
-// See server/ for a minimal Node/Express scaffold.
+// This script expects a backend server to serve the site and provide endpoints for PayPal orders:
+//  - GET /config -> { paypalClientId, paypalMode }
+//  - POST /create-paypal-order { amount } -> { orderID }
+//  - POST /capture-paypal-order { orderID } -> PayPal capture response
+// See server/ for a minimal Node/Express scaffold with PayPal support.
 
-let stripe = null;
+let paypalClientId = null;
+let paypalScriptLoaded = false;
+let selectedDonation = null;
 
-async function initStripe() {
+async function initPayPal() {
   try {
     const res = await fetch('/config');
     const cfg = await res.json();
-    stripe = Stripe(cfg.publicKey || 'pk_test_replace_me');
-    console.log('Stripe initialized');
+    paypalClientId = cfg.paypalClientId || '';
+    if (!paypalClientId) {
+      console.warn('PayPal client id not configured');
+      return;
+    }
+    // Dynamically load PayPal SDK only once
+    if (!paypalScriptLoaded) {
+      const s = document.createElement('script');
+      s.src = `https://www.paypal.com/sdk/js?client-id=${encodeURIComponent(paypalClientId)}&currency=USD`;
+      s.async = true;
+      s.onload = () => { paypalScriptLoaded = true; console.log('PayPal SDK loaded'); };
+      s.onerror = () => console.error('Failed to load PayPal SDK');
+      document.head.appendChild(s);
+    }
   } catch (err) {
-    console.error('Failed to initialize Stripe:', err);
+    console.error('Failed to initialize PayPal:', err);
   }
 }
 
-async function donate(amount) {
-  if (!stripe) {
-    alert('Payments are not configured. Run the local server and set Stripe keys.');
-    return;
-  }
-
-  // amount is expected in USD (dollars) here; convert to cents for Checkout
-  const cents = Math.round(Number(amount) * 100);
-  if (!Number.isFinite(cents) || cents <= 0) {
-    alert('Invalid amount');
-    return;
-  }
-
-  try {
-    const res = await fetch('/create-checkout-session', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ amount: cents })
-    });
-    const data = await res.json();
-    if (data.id) {
-      const result = await stripe.redirectToCheckout({ sessionId: data.id });
-      if (result.error) console.error(result.error.message);
-    } else {
-      console.error('No session id returned', data);
-      alert('Payment setup failed. See console.');
-    }
-  } catch (err) {
-    console.error('Error creating checkout session', err);
-    alert('Payment request failed; check console for details.');
-  }
+function selectDonation(amount) {
+  selectedDonation = Number(amount);
+  // render PayPal button for this amount
+  renderPayPalButton(selectedDonation);
 }
 
 function customDonate() {
   const value = prompt('Enter donation amount (USD):');
-  if (value) donate(value);
+  if (!value) return;
+  const num = Number(value);
+  if (!Number.isFinite(num) || num <= 0) return alert('Invalid amount');
+  selectDonation(num);
 }
 
-// Prevent the contact form from submitting (no backend) and wire up Stripe on load
+async function renderPayPalButton(amount) {
+  await initPayPal();
+  if (!paypalScriptLoaded || !window.paypal) {
+    return alert('PayPal is not available; try again later.');
+  }
+
+  const container = document.getElementById('paypal-button-container');
+  container.innerHTML = '';
+  window.paypal.Buttons({
+    style: { layout: 'vertical', color: 'gold', shape: 'rect', label: 'paypal' },
+    createOrder: async (data, actions) => {
+      // ask server to create order
+      const res = await fetch('/create-paypal-order', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount: String(amount) })
+      });
+      const j = await res.json();
+      if (!res.ok) {
+        throw new Error((j && j.error) ? j.error : 'Failed to create order');
+      }
+      return j.orderID;
+    },
+    onApprove: async (data, actions) => {
+      // capture on the server
+      const res = await fetch('/capture-paypal-order', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderID: data.orderID })
+      });
+      const j = await res.json();
+      if (!res.ok) {
+        alert('Payment capture failed: ' + (j && j.error ? j.error : 'unknown'));
+        return;
+      }
+      alert('Thank you! Donation completed.');
+      document.getElementById('paypal-button-container').innerHTML = '';
+    },
+    onError: (err) => {
+      console.error('PayPal error', err);
+      alert('Payment failed: ' + (err && err.message ? err.message : 'Unknown error'));
+    }
+  }).render('#paypal-button-container');
+}
+
+
+// Prevent the contact form from submitting (no backend) and wire up PayPal on load
 function getAuthToken() {
   return localStorage.getItem('marani_token');
 }
@@ -88,7 +123,7 @@ async function parseJsonSafe(res) {
 } 
 
 document.addEventListener('DOMContentLoaded', () => {
-  initStripe();
+  initPayPal();
 
   const form = document.querySelector('.contact-form');
   if (form) {

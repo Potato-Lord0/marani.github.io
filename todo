@@ -1,0 +1,83 @@
+Production-readiness checklist for marani.github.io
+
+1) Migrate to MongoDB (in-progress)
+   - Replace file-based JSON with MongoDB models and a data access layer
+   - Design schemas: users, events, posts, moderation_logs, payments
+   - Add migrations/seeders in `server/migrations/` and models in `server/models/`
+   - Add connection retry/backoff and graceful shutdown handling
+   - Acceptance: integration tests for CRUD operations, persistent data across restarts
+
+2) PayPal E2E & Webhooks (not-started)
+   - Complete sandbox end-to-end tests (create -> approve -> capture)
+   - Implement webhook verification and save payment records in DB
+   - Handle refunds and webhook retry idempotency
+   - Acceptance: sandbox test passes and webhooks are verified/persisted
+
+3) Secrets & Config Management (not-started)
+   - Remove secrets from repo, add `.env.example`
+   - Use secret manager (GitHub Actions Secrets / vault) in CI/CD
+   - Acceptance: no secrets in repo and documented setup
+
+4) HTTPS, Docker & Deployment (not-started)
+   - Add Dockerfile, docker-compose, or PaaS config
+   - Setup TLS (Let's Encrypt) and CI/CD deployment pipeline
+   - Acceptance: site deployed to staging with HTTPS and smoke tests pass
+
+5) Auth & Security Hardening (not-started)
+   - Enforce secure JWT secrets and consider refresh tokens
+   - Add CSRF protection, Content Security Policy, input validation
+   - Harden rate-limits and account lockouts on suspicious attempts
+   - Acceptance: basic penetration tests show no trivial auth/XSS issues
+
+6) Moderation Audit & Notifications (not-started)
+   - Record audit logs for flags/clears/deletes with user IDs and timestamps
+   - Add optional notification channels (email/slack) for flagged posts
+   - Acceptance: logs present and admin UI shows audit trail
+
+7) Testing & CI (not-started)
+   - Add unit tests (Jest), integration tests (Supertest), E2E (Playwright/Cypress)
+   - Add GitHub Actions workflow to run tests and linting
+   - Acceptance: PRs require passing CI before merge
+
+8) Dependency Audit & Maintenance (not-started)
+   - Run `npm audit`, fix high-severity issues, enable Dependabot
+   - PIN critical deps or use lockfile maintenance
+   - Acceptance: no high-severity vulnerabilities outstanding
+
+9) Backups & Recovery (not-started)
+   - Schedule DB backups and export procedures
+   - Add restore runbook and verify restores periodically
+   - Acceptance: test restore works and docs updated
+
+10) Privacy, Terms & Compliance (not-started)
+    - Add privacy policy, terms of service, cookie policy
+    - Implement data retention policy and GDPR/CCPA considerations
+    - Acceptance: legal pages added and documented
+
+11) Observability & Monitoring (not-started)
+    - Add structured logging, error tracking (Sentry), metrics (Prometheus/Grafana)
+    - Configure alerts for errors and downtime
+    - Acceptance: alerts and dashboards reporting key metrics
+
+12) Accessibility & UX (not-started)
+    - Run WCAG/a11y audits & fix issues, improve mobile/responsive behavior
+    - Improve error messages and moderation UX
+    - Acceptance: a11y audit passes basic checks
+
+13) RBAC (not-started)
+    - Introduce roles (moderator/editor/etc) and enforce in API/UI
+    - Acceptance: role enforcement via tests and admin UI
+
+14) Email: verification & password reset (not-started)
+    - Integrate transactional email provider, implement email flows
+    - Acceptance: verification and reset flows functioning in staging
+
+15) Docs & Onboarding (not-started)
+    - Update README with production setup and PayPal testing steps
+    - Add runbook and contributor guide
+    - Acceptance: new devs can follow docs to run the app locally and in staging
+
+---
+Notes:
+- Prioritize DB migration, PayPal end-to-end testing, and secrets management first.
+- Keep tasks small and create follow-up todos for sub-steps as you make progress.

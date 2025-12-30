@@ -54,9 +54,10 @@ const postLimiter = rateLimit({ windowMs: 60 * 1000, max: 30, message: { error: 
 app.use(express.static(path.join(__dirname, '..')));
 
 app.get('/config', (req, res) => {
-  res.json({ publicKey: stripePublishable });
+  res.json({ publicKey: stripePublishable, paypalClientId: process.env.PAYPAL_CLIENT_ID || '', paypalMode: process.env.PAYPAL_MODE || 'sandbox' });
 });
 
+// Stripe-based checkout (kept for backwards compatibility)
 app.post('/create-checkout-session', async (req, res) => {
   const { amount } = req.body; // expected in cents
   if (!amount || isNaN(amount) || amount <= 0) {
@@ -85,6 +86,122 @@ app.post('/create-checkout-session', async (req, res) => {
   } catch (err) {
     console.error('Stripe session error', err);
     res.status(500).json({ error: 'Internal error creating session' });
+  }
+});
+
+// -- PayPal integration --
+const PAYPAL_CLIENT = process.env.PAYPAL_CLIENT_ID || '';
+const PAYPAL_SECRET = process.env.PAYPAL_SECRET || '';
+const PAYPAL_MODE = (process.env.PAYPAL_MODE || 'sandbox').toLowerCase();
+const PAYPAL_BASE = PAYPAL_MODE === 'live' ? 'https://api-m.paypal.com' : 'https://api-m.sandbox.paypal.com';
+
+async function getPayPalAccessToken() {
+  if (!PAYPAL_CLIENT || !PAYPAL_SECRET) throw new Error('PayPal not configured');
+  return new Promise((resolve, reject) => {
+    const data = 'grant_type=client_credentials';
+    const auth = Buffer.from(`${PAYPAL_CLIENT}:${PAYPAL_SECRET}`).toString('base64');
+    const url = new URL('/v1/oauth2/token', PAYPAL_BASE);
+    const https = require('https');
+    const opts = {
+      method: 'POST',
+      headers: {
+        'Authorization': `Basic ${auth}`,
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Content-Length': Buffer.byteLength(data)
+      }
+    };
+
+    const req = https.request(url, opts, (res) => {
+      let raw = '';
+      res.on('data', (chunk) => raw += chunk);
+      res.on('end', () => {
+        try {
+          const j = JSON.parse(raw);
+          if (!j.access_token) return reject(new Error('No access token from PayPal'));
+          resolve(j.access_token);
+        } catch (err) { reject(err); }
+      });
+    });
+
+    req.on('error', (err) => reject(err));
+    req.write(data);
+    req.end();
+  });
+}
+
+app.post('/create-paypal-order', async (req, res) => {
+  if (!PAYPAL_CLIENT || !PAYPAL_SECRET) return res.status(501).json({ error: 'PayPal not configured on server' });
+  const { amount } = req.body || {};
+  const valueStr = String(amount || '0');
+  if (!valueStr || Number.isNaN(Number(valueStr)) || Number(valueStr) <= 0) return res.status(400).json({ error: 'Invalid amount' });
+
+  try {
+    const token = await getPayPalAccessToken();
+    const orderBody = JSON.stringify({
+      intent: 'CAPTURE',
+      purchase_units: [{ amount: { currency_code: 'USD', value: String(Number(valueStr).toFixed(2)) } }]
+    });
+
+    const https = require('https');
+    const url = new URL('/v2/checkout/orders', PAYPAL_BASE);
+    const opts = {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(orderBody)
+      }
+    };
+
+    const preq = https.request(url, opts, (pres) => {
+      let raw = '';
+      pres.on('data', (c) => raw += c);
+      pres.on('end', () => {
+        try {
+          const j = JSON.parse(raw);
+          if (!j || !j.id) return res.status(500).json({ error: 'Invalid response from PayPal' });
+          res.json({ orderID: j.id });
+        } catch (err) { console.error('PayPal order parse error', err); res.status(500).json({ error: 'PayPal order failed' }); }
+      });
+    });
+    preq.on('error', (err) => { console.error('PayPal order error', err); res.status(500).json({ error: 'PayPal request failed' }); });
+    preq.write(orderBody);
+    preq.end();
+  } catch (err) {
+    console.error('Create PayPal order error', err);
+    res.status(500).json({ error: 'Failed to create PayPal order' });
+  }
+});
+
+app.post('/capture-paypal-order', async (req, res) => {
+  if (!PAYPAL_CLIENT || !PAYPAL_SECRET) return res.status(501).json({ error: 'PayPal not configured on server' });
+  const { orderID } = req.body || {};
+  if (!orderID) return res.status(400).json({ error: 'Missing orderID' });
+
+  try {
+    const token = await getPayPalAccessToken();
+    const https = require('https');
+    const url = new URL(`/v2/checkout/orders/${encodeURIComponent(orderID)}/capture`, PAYPAL_BASE);
+    const opts = {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
+    };
+
+    const preq = https.request(url, opts, (pres) => {
+      let raw = '';
+      pres.on('data', (c) => raw += c);
+      pres.on('end', () => {
+        try {
+          const j = JSON.parse(raw);
+          res.json(j);
+        } catch (err) { console.error('PayPal capture parse error', err); res.status(500).json({ error: 'PayPal capture failed' }); }
+      });
+    });
+    preq.on('error', (err) => { console.error('PayPal capture error', err); res.status(500).json({ error: 'PayPal request failed' }); });
+    preq.end();
+  } catch (err) {
+    console.error('Capture PayPal order error', err);
+    res.status(500).json({ error: 'Failed to capture PayPal order' });
   }
 });
 
