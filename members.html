@@ -75,6 +75,7 @@
         <nav class="member-nav">
           <button class="btn" id="tab-events">Calendar</button>
           <button class="btn" id="tab-discussion">Discussion Board</button>
+          <button class="btn" id="tab-moderation" style="display:none;">Moderation</button>
         </nav>
 
         <div id="tab-events-content" class="member-tab">
@@ -85,11 +86,22 @@
         <div id="tab-discussion-content" class="member-tab" style="display:none;">
           <h3>Discussion Board</h3>
           <form id="post-form" class="post-form">
-            <textarea id="post-content" placeholder="Share a thought, question, or event idea" required></textarea>
-            <button type="submit" class="btn primary">Post</button>
+            <textarea id="post-content" maxlength="1000" placeholder="Share a thought, question, or event idea" required></textarea>
+            <div>
+              <div id="post-controls">
+                <div id="char-count">0 / 1000</div>
+                <button type="submit" class="btn primary" id="post-submit">Post</button>
+              </div>
+            </div>
           </form>
 
           <div id="posts-list" class="posts-list"></div>
+        </div>
+
+        <div id="tab-moderation-content" class="member-tab" style="display:none;">
+          <h3>Moderation Queue</h3>
+          <p>Flagged posts are shown here for review. Admins can clear flags or delete posts.</p>
+          <div id="flagged-posts-list" class="posts-list"></div>
         </div>
       </div>
 

@@ -1,5 +1,21 @@
 [
   {
+    "id": "post-1767061862396",
+    "author": "Test User",
+    "authorId": "user-1767059712204",
+    "content": "Post to delete via smoke test",
+    "createdAt": 1767061862396,
+    "flagged": false
+  },
+  {
+    "id": "post-1767061236027",
+    "author": "Test User",
+    "authorId": "user-1767059712204",
+    "content": "Post to be flagged",
+    "createdAt": 1767061236027,
+    "flagged": false
+  },
+  {
     "id": "post-1",
     "author": "Founder",
     "authorId": "system",

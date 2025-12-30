@@ -77,6 +77,16 @@ async function fetchWithAuth(url, opts = {}) {
   return fetch(url, { ...opts, headers });
 }
 
+// Safely parse JSON responses, fall back to text when content-type isn't JSON
+async function parseJsonSafe(res) {
+  const ct = (res.headers.get('content-type') || '').toLowerCase();
+  if (ct.includes('application/json')) {
+    return res.json();
+  }
+  // If the server returned HTML or plain text, return the text for a clearer error message
+  return res.text();
+} 
+
 document.addEventListener('DOMContentLoaded', () => {
   initStripe();
 
@@ -127,6 +137,9 @@ document.addEventListener('DOMContentLoaded', () => {
   showRegisterBtn && showRegisterBtn.addEventListener('click', showRegister);
   showLoginBtn && showLoginBtn.addEventListener('click', showLogin);
 
+  // Show login form by default on members page
+  if (window.location.pathname.endsWith('/members.html') && loginForm) showLogin();
+
   if (registerForm) {
     registerForm.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -138,8 +151,11 @@ document.addEventListener('DOMContentLoaded', () => {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ name, email, password })
         });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'Registration failed');
+        const data = await parseJsonSafe(res);
+        if (!res.ok) {
+          const msg = (data && typeof data === 'object') ? (data.error || JSON.stringify(data)) : String(data || 'Registration failed');
+          throw new Error(msg);
+        }
         setAuth(data.token, data.user);
         initializeMemberArea();
       } catch (err) {
@@ -158,8 +174,11 @@ document.addEventListener('DOMContentLoaded', () => {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, password })
         });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'Sign in failed');
+        const data = await parseJsonSafe(res);
+        if (!res.ok) {
+          const msg = (data && typeof data === 'object') ? (data.error || JSON.stringify(data)) : String(data || 'Sign in failed');
+          throw new Error(msg);
+        }
         setAuth(data.token, data.user);
         initializeMemberArea();
       } catch (err) {
@@ -228,10 +247,19 @@ document.addEventListener('DOMContentLoaded', () => {
         meta.appendChild(document.createTextNode(' • '));
         meta.appendChild(time);
 
-        // Actions container (e.g., delete)
+        // Flagged badge
+        if (p.flagged) {
+          const badge = document.createElement('span');
+          badge.className = 'flagged-badge';
+          badge.textContent = 'Flagged';
+          meta.appendChild(badge);
+        }
+
+        // Actions container (delete by owner, flag by others)
+        const actions = document.createElement('div');
+        actions.className = 'actions';
+
         if (currentUser && currentUser.id && p.authorId === currentUser.id) {
-          const actions = document.createElement('div');
-          actions.className = 'actions';
           const del = document.createElement('button');
           del.className = 'delete-btn';
           del.textContent = 'Delete';
@@ -239,8 +267,11 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!confirm('Delete this post? This cannot be undone.')) return;
             try {
               const d = await fetchWithAuth(`/api/posts/${encodeURIComponent(p.id)}`, { method: 'DELETE' });
-              const body = await d.json();
-              if (!d.ok) throw new Error(body.error || 'Delete failed');
+              const body = await parseJsonSafe(d).catch(() => null);
+              if (!d.ok) {
+                const msg = (body && typeof body === 'object') ? (body.error || JSON.stringify(body)) : String(body || 'Delete failed');
+                throw new Error(msg);
+              }
               // remove post element from DOM
               postEl.remove();
             } catch (err) {
@@ -248,8 +279,44 @@ document.addEventListener('DOMContentLoaded', () => {
             }
           });
           actions.appendChild(del);
-          meta.appendChild(actions);
+        } else if (currentUser && currentUser.id) {
+          // allow flagging
+          if (!p.flagged) {
+            const flagBtn = document.createElement('button');
+            flagBtn.className = 'delete-btn';
+            flagBtn.textContent = 'Flag';
+            flagBtn.addEventListener('click', async () => {
+              const reason = prompt('Reason for flagging (optional):');
+              try {
+                const d = await fetchWithAuth(`/api/posts/${encodeURIComponent(p.id)}/flag`, {
+                  method: 'POST', headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ reason })
+                });
+                const body = await parseJsonSafe(d).catch(() => null);
+                if (!d.ok) {
+                  const msg = (body && typeof body === 'object') ? (body.error || JSON.stringify(body)) : String(body || 'Flag failed');
+                  throw new Error(msg);
+                }
+                fetchPosts();
+                // if admin panel visible, refresh it
+                if (typeof window.fetchFlaggedPosts === 'function') window.fetchFlaggedPosts();
+                alert('Post flagged for review.');
+              } catch (err) {
+                alert('Flag failed: ' + err.message);
+              }
+            });
+            actions.appendChild(flagBtn);
+          } else {
+            // show small note if already flagged
+            const flaggedNote = document.createElement('span');
+            flaggedNote.className = 'flagged-note';
+            flaggedNote.textContent = 'Flagged';
+            actions.appendChild(flaggedNote);
+          }
         }
+
+        // append actions if any
+        if (actions.children.length) meta.appendChild(actions);
 
         const content = document.createElement('div');
         content.className = 'content';
@@ -262,24 +329,109 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (err) {
       postsList.innerHTML = '<p>Unable to load discussion. Please sign in.</p>';
     }
-  }
+  } 
 
   if (postForm) {
+    const postContent = document.getElementById('post-content');
+    const postSubmit = document.getElementById('post-submit');
+    const charCount = document.getElementById('char-count');
+
+    async function fetchFlaggedPosts() {
+      try {
+        const res = await fetchWithAuth('/api/mod/posts');
+        if (!res.ok) throw new Error('Failed to load flagged posts');
+        const posts = await res.json();
+        const flaggedList = document.getElementById('flagged-posts-list');
+        if (!flaggedList) return;
+        flaggedList.innerHTML = '';
+        posts.forEach(p => {
+          const el = document.createElement('div');
+          el.className = 'post';
+
+          const meta = document.createElement('div');
+          meta.className = 'meta';
+          const avatar = document.createElement('div'); avatar.className = 'avatar';
+          avatar.textContent = (p.author||'').split(' ').map(s=>s[0]).slice(0,2).join('').toUpperCase() || 'M';
+          const author = document.createElement('span'); author.className = 'author'; author.textContent = p.author;
+          const time = document.createElement('span'); time.className = 'time'; time.textContent = new Date(p.createdAt).toLocaleString();
+          meta.appendChild(avatar); meta.appendChild(author); meta.appendChild(document.createTextNode(' • ')); meta.appendChild(time);
+
+          const reason = document.createElement('div'); reason.className = 'flag-reason'; reason.textContent = p.flagReason ? `Reason: ${p.flagReason}` : 'No reason provided.';
+
+          const actions = document.createElement('div'); actions.className = 'actions';
+          const clearBtn = document.createElement('button'); clearBtn.className = 'delete-btn'; clearBtn.textContent = 'Clear Flag';
+          clearBtn.addEventListener('click', async () => {
+            if (!confirm('Clear flag for this post?')) return;
+            try {
+              const r = await fetchWithAuth(`/api/mod/posts/${encodeURIComponent(p.id)}/clear-flag`, { method: 'POST' });
+              const b = await parseJsonSafe(r).catch(() => null);
+              if (!r.ok) {
+                const msg = (b && typeof b === 'object') ? (b.error || JSON.stringify(b)) : String(b || 'Clear failed');
+                throw new Error(msg);
+              }
+              fetchFlaggedPosts(); fetchPosts();
+            } catch (err) { alert('Clear failed: '+err.message); }
+          });
+          const delBtn = document.createElement('button'); delBtn.className = 'delete-btn'; delBtn.textContent = 'Delete';
+          delBtn.addEventListener('click', async () => {
+            if (!confirm('Delete this post permanently?')) return;
+            try {
+              const r = await fetchWithAuth(`/api/mod/posts/${encodeURIComponent(p.id)}`, { method: 'DELETE' });
+              const b = await parseJsonSafe(r).catch(() => null);
+              if (!r.ok) {
+                const msg = (b && typeof b === 'object') ? (b.error || JSON.stringify(b)) : String(b || 'Delete failed');
+                throw new Error(msg);
+              }
+              fetchFlaggedPosts(); fetchPosts();
+            } catch (err) { alert('Delete failed: '+err.message); }
+          });
+          actions.appendChild(clearBtn); actions.appendChild(delBtn);
+
+          const content = document.createElement('div'); content.className = 'content'; content.textContent = p.content || '';
+
+          el.appendChild(meta); el.appendChild(reason); el.appendChild(content); el.appendChild(actions);
+          flaggedList.appendChild(el);
+        });
+      } catch (err) {
+        // ignore, admin panel will show empty
+      }
+    }
+
+    // Expose fetchFlaggedPosts to window for use elsewhere (e.g., after flagging)
+    window.fetchFlaggedPosts = typeof fetchFlaggedPosts === 'function' ? fetchFlaggedPosts : null;
+
+    function updateCharCount() {
+      const len = postContent.value.length;
+      charCount.textContent = `${len} / ${postContent.getAttribute('maxlength') || 1000}`;
+      postSubmit.disabled = len === 0 || len > Number(postContent.getAttribute('maxlength'));
+    }
+
+    postContent && postContent.addEventListener('input', updateCharCount);
+    updateCharCount();
+
     postForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const content = document.getElementById('post-content').value.trim();
+      const content = postContent.value.trim();
       if (!content) return;
+      if (content.length > 2000) { alert('Post is too long'); return; }
       try {
+        postSubmit.disabled = true;
         const res = await fetchWithAuth('/api/posts', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ content })
         });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'Post failed');
-        document.getElementById('post-content').value = '';
+        const data = await parseJsonSafe(res);
+        if (!res.ok) {
+          const msg = (data && typeof data === 'object') ? (data.error || JSON.stringify(data)) : String(data || 'Post failed');
+          throw new Error(msg);
+        }
+        postContent.value = '';
+        updateCharCount();
         fetchPosts();
       } catch (err) {
         alert('Post failed: ' + err.message);
+      } finally {
+        postSubmit.disabled = false;
       }
     });
   }
@@ -297,6 +449,24 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('auth-forms').style.display = 'none';
       memberArea.style.display = '';
       memberWelcome.textContent = `Welcome, ${me.name || me.email}`;
+      // moderation tab visibility for admins
+      const tabModerationEl = document.getElementById('tab-moderation');
+      const tabModerationContent = document.getElementById('tab-moderation-content');
+      const flaggedPostsList = document.getElementById('flagged-posts-list');
+      if (tabModerationEl) {
+        if (me.isAdmin) {
+          tabModerationEl.style.display = '';
+          tabModerationEl.addEventListener('click', () => {
+            tabModerationContent.style.display = '';
+            tabDiscussionContent.style.display = 'none';
+            tabEventsContent.style.display = 'none';
+            fetchFlaggedPosts();
+          });
+        } else {
+          tabModerationEl.style.display = 'none';
+        }
+      }
+
       fetchEvents();
       fetchPosts();
     } catch (err) {

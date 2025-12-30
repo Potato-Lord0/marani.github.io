@@ -35,8 +35,22 @@ Membership
   - `GET /api/events` -> member-only events (calendar)
   - `GET /api/posts` -> list discussion posts
   - `POST /api/posts` { content } -> create post
+  - `POST /api/posts/:id/flag` { reason? } -> flag a post for moderation
+  - `POST /api/mod/posts/:id/clear-flag` -> admin-only clear flag
+  - `GET /api/mod/posts` -> admin-only list flagged posts
+  - `DELETE /api/mod/posts/:id` -> admin-only delete post
+  - `POST /api/assign-admin` { email, secret } -> dev helper to grant admin role (requires `ADMIN_SECRET` env var)
 - Configure `JWT_SECRET` in your `.env` for production-like tokens. For local testing a default is used.
-- Start the server (`npm start`) and use the membership UI on the `Membership` section of the site to register and sign in.
+- Start the server (`npm start`) and use the membership UI on the `Member Area` page to register and sign in.
+
+Admin (dev) setup:
+- Set `ADMIN_SECRET` in `.env` and call `POST /api/assign-admin` with `{ "email": "test@example.com", "secret": "your-secret" }` to promote a user to admin for testing moderation features.
+
+Security notes:
+- This is a prototype with file-based storage; **do not use in production**.
+- Environment: set a secure `JWT_SECRET` in your `.env` to avoid predictable tokens.
+- Consider moving to a real database, enabling HTTPS, adding email verification, and adding moderation & audit logging for posts.
+- Basic protections added: `helmet` (security headers), request body size limits, input validation, and rate limiting on auth and posts endpoints.
 -For testing:
     test@example.com
     pass123

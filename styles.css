@@ -210,6 +210,15 @@ a:hover { text-decoration: underline; opacity: 0.95; }
 .delete-btn { background: transparent; border: none; color: var(--deep-red); font-weight: 700; cursor: pointer; padding: 0.25rem 0.5rem; border-radius: 6px; }
 .delete-btn:hover { background: rgba(160,74,42,0.06); }
 .post .content { font-size:1.05rem; color: var(--earth); line-height:1.5; }
+.flagged-badge { margin-left: .5rem; background: var(--deep-red); color: #fff; padding: 0.2rem 0.5rem; border-radius: 6px; font-weight: 700; font-size: 0.85rem; }
+.flagged-note { color: var(--deep-red); font-weight:700; margin-left: .5rem; }
+.flag-reason { font-size: 0.95rem; color: rgba(0,0,0,0.6); margin-bottom: 0.5rem; }
+/* Moderation specific tweaks */
+#flagged-posts-list .post { border-left-color: var(--deep-red); }
+#flagged-posts-list .actions { display:flex; gap: .5rem; }
+#post-controls { display:flex; align-items:center; gap: 1rem; }
+#char-count { color: rgba(0,0,0,0.45); font-size: 0.95rem; }
+
 /* Small devices - stack form */
 @media (max-width: 640px) {
   .post-form { flex-direction: column; }

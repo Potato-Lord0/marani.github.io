@@ -3,6 +3,13 @@
     "id": "user-1767059712204",
     "name": "Test User",
     "email": "test@example.com",
-    "password": "$2a$10$UVo1yTIn4gCD11c1MEtTqeBwxOdtxLyNFbtJipub6QJgG/mZ2XAAi"
+    "password": "$2a$10$UVo1yTIn4gCD11c1MEtTqeBwxOdtxLyNFbtJipub6QJgG/mZ2XAAi",
+    "isAdmin": true
+  },
+  {
+    "id": "user-1767061236133",
+    "name": "Bob",
+    "email": "bob@example.com",
+    "password": "$2a$10$f0W9ogMJltGUyksLiPC1m.j//464x6QUYSpLg1a49KxGYikorYgg2"
   }
 ]
