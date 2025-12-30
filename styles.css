@@ -183,6 +183,40 @@ a:hover { text-decoration: underline; opacity: 0.95; }
 .note { margin-top: var(--space-sm); font-size: 0.95rem; color: rgba(255,255,255,0.8); }
 
 /* =========================
+   Membership UI
+========================= */
+.membership-cta { display: flex; gap: var(--space-sm); margin: var(--space-sm) 0; }
+.auth-forms { margin: var(--space-md) 0; }
+.auth-form { display: flex; flex-direction: column; gap: var(--space-sm); max-width: 420px; }
+.auth-form input, .auth-form textarea { padding: 0.8rem; border-radius: 6px; border: 1px solid rgba(0,0,0,0.08); }
+.member-area { margin-top: var(--space-md); border-top: 1px solid rgba(0,0,0,0.06); padding-top: var(--space-md); }
+.member-header { display:flex; justify-content:space-between; align-items:center; gap:var(--space-sm); margin-bottom:var(--space-md); }
+.member-nav { display:flex; gap:var(--space-sm); margin-bottom:var(--space-md); }
+.member-tab { background: rgba(255,255,255,0.02); padding: var(--space-md); border-radius: 8px; }
+.events-list .event { padding: var(--space-sm); border-bottom: 1px solid rgba(0,0,0,0.06); }
+
+/* Discussion improvements */
+.post-form { display:flex; gap: 1rem; align-items: flex-start; max-width: 900px; }
+.post-form textarea { flex: 1; min-height: 110px; padding: 1rem; border-radius: 8px; border: 1px solid rgba(0,0,0,0.08); font-size: 1rem; }
+.post-form button { align-self: flex-start; padding: 0.8rem 1.6rem; border-radius: 8px; }
+
+.posts-list { margin-top: var(--space-md); display:flex; flex-direction:column; gap:var(--space-md); max-width: 1000px; }
+.post { padding: var(--space-md); border-radius:10px; background: #fff; box-shadow: 0 6px 18px rgba(16,11,8,0.06); border-left: 4px solid var(--terracotta); }
+.post .meta { display:flex; align-items:center; gap: .75rem; font-size: 0.95rem; color: rgba(0,0,0,0.6); margin-bottom: 0.75rem; }
+.post .meta .avatar { width:36px; height:36px; border-radius:50%; background: linear-gradient(180deg,var(--terracotta),var(--deep-red)); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; box-shadow: 0 2px 6px rgba(0,0,0,0.06); }
+.post .meta .author { font-weight:700; color: var(--earth); }
+.post .meta .time { font-size:0.9rem; color: rgba(0,0,0,0.45); }
+.post .meta .actions { margin-left: auto; }
+.delete-btn { background: transparent; border: none; color: var(--deep-red); font-weight: 700; cursor: pointer; padding: 0.25rem 0.5rem; border-radius: 6px; }
+.delete-btn:hover { background: rgba(160,74,42,0.06); }
+.post .content { font-size:1.05rem; color: var(--earth); line-height:1.5; }
+/* Small devices - stack form */
+@media (max-width: 640px) {
+  .post-form { flex-direction: column; }
+  .post-form button { width: 100%; }
+}
+
+/* =========================
    Forms & Footer
 ========================= */
 .contact-form { display: flex; flex-direction: column; gap: var(--space-sm); max-width: 520px; }

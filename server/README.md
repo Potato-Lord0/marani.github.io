@@ -25,3 +25,18 @@ npm start
 Notes
 - Do NOT commit real secret keys. Use test keys only while developing.
 - This is a minimal example for local testing only; do not use as-is in production.
+
+Membership
+- The server includes a simple membership API for prototyping (file-based storage in `server/data/`).
+- Endpoints:
+  - `POST /api/register` { name, email, password } -> { token, user }
+  - `POST /api/login` { email, password } -> { token, user }
+  - `GET /api/me` -> authenticated user
+  - `GET /api/events` -> member-only events (calendar)
+  - `GET /api/posts` -> list discussion posts
+  - `POST /api/posts` { content } -> create post
+- Configure `JWT_SECRET` in your `.env` for production-like tokens. For local testing a default is used.
+- Start the server (`npm start`) and use the membership UI on the `Membership` section of the site to register and sign in.
+-For testing:
+    test@example.com
+    pass123

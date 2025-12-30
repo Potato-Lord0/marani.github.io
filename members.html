@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Members — Marani Wine Club</title>
+  <meta name="description" content="Member area: calendar of events and discussion board for Marani Wine Club members." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+  <!-- Navigation -->
+  <header class="navbar">
+    <div class="container nav-content">
+      <div class="logo">
+        <a href="/"><img src="images/marani-logo2.png" alt="Marani Logo"></a>
+      </div>
+      <button class="nav-toggle" aria-controls="primary-navigation" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="nav-toggle-icon"></span>
+      </button>
+      <nav>
+        <ul class="nav-links" id="primary-navigation" role="navigation">
+          <li><a href="/">Home</a></li>
+          <li><a href="#about">About</a></li>
+          <li><a href="#activities">Activities</a></li>
+          <li><a href="/members.html">Members</a></li>
+          <li><a href="#gallery">Gallery</a></li>
+          <li><a href="#donate">Donate</a></li>
+          <li><a href="#contact">Contact</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <section class="section light">
+    <div class="container">
+      <h2>Member Area</h2>
+      <p>This area contains a calendar of upcoming events and a member discussion board. You must register or sign in to access member-only features.</p>
+
+      <div id="membership-cta" class="membership-cta">
+        <button class="btn primary" id="show-register">Register</button>
+        <button class="btn secondary" id="show-login">Sign In</button>
+      </div>
+
+      <div id="auth-forms" class="auth-forms" aria-live="polite">
+        <form id="register-form" class="auth-form" style="display:none;">
+          <h3>Register</h3>
+          <input type="text" id="reg-name" placeholder="Full name" required />
+          <input type="email" id="reg-email" placeholder="Email" required />
+          <input type="password" id="reg-password" placeholder="Password" required />
+          <button type="submit" class="btn primary">Create Account</button>
+        </form>
+
+        <form id="login-form" class="auth-form" style="display:none;">
+          <h3>Sign In</h3>
+          <input type="email" id="login-email" placeholder="Email" required />
+          <input type="password" id="login-password" placeholder="Password" required />
+          <button type="submit" class="btn primary">Sign In</button>
+        </form>
+      </div>
+
+      <div id="member-area" class="member-area" style="display:none;">
+        <div class="member-header">
+          <strong id="member-welcome"></strong>
+          <div>
+            <button class="btn secondary" id="sign-out">Sign Out</button>
+          </div>
+        </div>
+
+        <nav class="member-nav">
+          <button class="btn" id="tab-events">Calendar</button>
+          <button class="btn" id="tab-discussion">Discussion Board</button>
+        </nav>
+
+        <div id="tab-events-content" class="member-tab">
+          <h3>Upcoming Events</h3>
+          <div id="events-list" class="events-list"></div>
+        </div>
+
+        <div id="tab-discussion-content" class="member-tab" style="display:none;">
+          <h3>Discussion Board</h3>
+          <form id="post-form" class="post-form">
+            <textarea id="post-content" placeholder="Share a thought, question, or event idea" required></textarea>
+            <button type="submit" class="btn primary">Post</button>
+          </form>
+
+          <div id="posts-list" class="posts-list"></div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <footer>
+    <p>© 2025 Marani Wine Club | Great Falls, Virginia</p>
+  </footer>
+
+  <script src="scripts.js"></script>
+</body>
+</html>
